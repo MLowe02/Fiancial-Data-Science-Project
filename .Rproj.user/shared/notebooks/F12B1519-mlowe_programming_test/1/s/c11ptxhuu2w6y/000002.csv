@@ -1,0 +1,8 @@
+"0","```r
+vendor37UsersPostClose %>%
+  .$account %>% 
+  unique %>% 
+  length
+```"
+"1","[1] 98
+"

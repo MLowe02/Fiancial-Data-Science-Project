@@ -1,0 +1,8 @@
+"0","```r
+#Only 6 countries have more than 100 transactions through vender 37
+Vend37 %>% group_by(country_code) %>% filter(n() > 100) %>% .$country_code %>% table %>% sort
+```"
+"1",".
+country217  country51 country214  country16  country45  country66 
+       109        124        170        175        557        591 
+"

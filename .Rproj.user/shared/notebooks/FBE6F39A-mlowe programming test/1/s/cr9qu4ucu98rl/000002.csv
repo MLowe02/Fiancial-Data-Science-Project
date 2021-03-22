@@ -1,0 +1,7 @@
+"0","MonthsBefore37Closure %>% "
+"0","  filter(vendor == ""vendor37"") %>% "
+"0","  select(account) %>% unique %>% nrow"
+"1","[1]"
+"1"," 1215"
+"1","
+"

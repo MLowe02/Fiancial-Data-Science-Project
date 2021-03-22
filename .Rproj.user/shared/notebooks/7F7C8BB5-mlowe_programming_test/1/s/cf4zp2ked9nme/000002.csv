@@ -1,0 +1,5 @@
+"0","```r
+RevenueTest$conf.int[2] * nrow(Month4Revenue)
+```"
+"1","[1] 280554
+"

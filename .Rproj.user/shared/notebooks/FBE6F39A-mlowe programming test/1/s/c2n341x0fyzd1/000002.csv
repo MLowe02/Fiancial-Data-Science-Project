@@ -1,0 +1,4 @@
+"0","predictionset <- DailyRevAndVendors %>% window(start = 73, end = 121) #lets grab points 30 days after vendor closure"
+"0",""
+"0","RevForecast2 <- forecast(fit, xreg = predictionset[,-1])"
+"0","autoplot(RevForecast2) #we can see our prediction interval gets larger as time increases"

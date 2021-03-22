@@ -1,0 +1,14 @@
+"0","```r
+#Lets create variables that are the count of the vendor transactions for a given day
+DailyRevAndVendors <-
+  Transactions_KnownVendor %>% 
+  group_by(date) %>% 
+  summarize(DailyRevenue = sum(AdjRev), 
+            vendor11 = length(which(vendor==\"vendor11\")),
+            vendor26 = length(which(vendor==\"vendor26\")),
+            vendor33 = length(which(vendor==\"vendor33\")),
+            vendor36 = length(which(vendor==\"vendor36\")),
+            vendor37 = length(which(vendor==\"vendor37\")),
+            vendor42 = length(which(vendor==\"vendor42\")), ) %>% 
+  .[,-1] %>%  ts #these last two calls removes the date from the table and converts the table to a ts object
+```"

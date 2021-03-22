@@ -1,0 +1,23 @@
+{
+    "id": "EA37B1C7",
+    "path": null,
+    "project_path": null,
+    "type": "r_code_browser",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1614447596887.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "context": "package:stats:::start"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 2680920344368,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1614447596887,
+    "read_only": false,
+    "read_only_alternatives": []
+}

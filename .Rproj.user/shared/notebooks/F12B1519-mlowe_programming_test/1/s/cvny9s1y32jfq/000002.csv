@@ -1,0 +1,6 @@
+"0","```r
+#we use the function ymd, which takes a string as an input and converts it to a date format
+Transactions_KnownVendor$date <-  ymd(
+  paste(2020,Transactions_KnownVendor$month , Transactions_KnownVendor$day , sep = \"-\" ))#paste takes any vector as an input and converts it to a string.
+
+```"

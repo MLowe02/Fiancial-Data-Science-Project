@@ -1,0 +1,8 @@
+"0","#Bar plot of country usage"
+"0","Vend37 %>% group_by(country_code) %>% "
+"0","  ggplot() + "
+"0","  geom_bar(mapping = aes(x=country_code,fill = country_code))+ "
+"0","  theme(axis.title.x=element_blank(),"
+"0","        axis.text.x=element_blank(),"
+"0","        axis.ticks.x=element_blank())"
+"0",""

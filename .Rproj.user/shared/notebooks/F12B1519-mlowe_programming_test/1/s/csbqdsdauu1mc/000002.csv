@@ -1,0 +1,12 @@
+"0","```r
+#73 sku bought
+MonthsBefore37Closure %>% select(sku) %>% unique %>% nrow()
+```"
+"1","[1] 73
+"
+"0","```r
+#85 sku bought
+MonthsAfter37Closure %>% select(sku) %>% unique %>% nrow()
+```"
+"1","[1] 85
+"

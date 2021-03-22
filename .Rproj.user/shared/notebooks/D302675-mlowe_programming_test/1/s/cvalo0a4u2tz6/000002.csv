@@ -1,0 +1,3 @@
+"0","autoplot(window(DailyRevAndVendors[,1], start = 1, end = 121),xlab = ""Day"", ylab = ""Adjusted Revenue"",main = ""Forecasted revenue vs Actual revenue"")+"
+"0","  autolayer(RevForecast2,PI = F, series = ""Forecast"") +"
+"0","  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))"

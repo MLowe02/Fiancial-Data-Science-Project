@@ -1,0 +1,7 @@
+"0","```r
+#list of sku sold in the months before closure
+SkuList <- MonthsBefore37Closure %>% .$sku %>% unique
+MonthsAfter37Closure %>% filter(sku %in% SkuList) %>% select(sku) %>% unique %>% nrow()
+```"
+"1","[1] 58
+"

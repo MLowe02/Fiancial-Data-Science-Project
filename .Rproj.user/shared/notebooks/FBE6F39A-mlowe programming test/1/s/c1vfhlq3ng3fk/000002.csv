@@ -1,0 +1,5 @@
+"0","RevForecast1 <- forecast(fit, xreg = testset[,-1]) #forecast the revenue for new predictor values"
+"0","autoplot(window(DailyRevAndVendors[,1], start = 1, end = 91),#plot the first 91 days"
+"0","         xlab = ""Day"", ylab = ""Adjusted Revenue"",main = ""Forecasted revenue vs Actual revenue"")+"
+"0","  autolayer(RevForecast1) + #plot the forecast on the graph"
+"0","  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))"

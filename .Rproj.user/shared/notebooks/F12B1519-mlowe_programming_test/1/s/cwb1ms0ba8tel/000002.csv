@@ -1,0 +1,6 @@
+"0","```r
+MonthsBefore37Closure %>% .$account %>% unique() %>% length -
+MonthsAfter37Closure %>% .$account %>% unique %>% length
+```"
+"1","[1] 46189
+"

@@ -1,0 +1,8 @@
+"0","```r
+MonthsBefore37Closure %>% 
+  group_by(sku) %>%
+  summarise(TotalRevenue = sum(AdjRev)) %>% 
+  mutate(percent = prop.table(TotalRevenue)*100) %>% 
+  arrange(desc(percent)) %>%  
+  head(10) #look at the top 10 
+```"

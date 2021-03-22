@@ -1,0 +1,6 @@
+"0","predictionset2 <- predictionset"
+"0","predictionset2[,""vendor37""][predictionset2[,""vendor37""]==0] <- 21 #change the 0 values from after vendor 37 closure to the mean value of 21"
+"0",""
+"0","#forecast the data where vendor37 didn't close"
+"0","RevForecast3 <- forecast(fit, xreg = predictionset2[,-1])"
+"0","autoplot(RevForecast3)"

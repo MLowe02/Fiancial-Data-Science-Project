@@ -1,0 +1,13 @@
+"0","```r
+
+Transactions_KnownVendor <- Transactions_KnownVendor %>% 
+  group_by(vendor) %>% #case_when essentially acts as a elegant ifelse statement
+  mutate(AdjRev = case_when(vendor == \"vendor1\" ~ revenue-revenue*0.10,
+                            vendor == \"vendor11\" ~ revenue-revenue*0.05,
+                            vendor == \"vendor26\" ~ revenue-revenue*0.20,
+                            vendor == \"vendor33\" ~ revenue-revenue*0.22,
+                            vendor == \"vendor36\" ~ revenue-revenue*0.25,
+                            vendor == \"vendor37\" ~ revenue-revenue*0.30,
+                            vendor == \"vendor42\" ~ revenue-revenue*0.20,)) %>%
+  ungroup #ungroup is neccesary when we are saving changes made to an object
+```"

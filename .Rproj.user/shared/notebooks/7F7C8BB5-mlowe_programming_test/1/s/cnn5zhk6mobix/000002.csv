@@ -1,0 +1,11 @@
+"0","```r
+checkresiduals(fit)
+```"
+"1","
+	Ljung-Box test
+
+data:  Residuals from Regression with ARIMA(0,1,3) errors
+Q* = 11.398, df = 3, p-value = 0.009758
+
+Model df: 10.   Total lags used: 13
+"

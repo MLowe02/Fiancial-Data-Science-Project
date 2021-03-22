@@ -1,0 +1,26 @@
+"0","```r
+Month3Revenue <- 
+  Transactions_KnownVendor %>% 
+  filter(month == 3) %>%
+  select(AdjRev)
+
+Month4Revenue <-
+  Transactions_KnownVendor %>%
+  filter(month == 4) %>%
+  select(AdjRev)
+
+RevenueTest <- t.test(Month3Revenue, Month4Revenue)
+RevenueTest
+```"
+"1","
+	Welch Two Sample t-test
+
+data:  Month3Revenue and Month4Revenue
+t = 19.67, df = 240432, p-value < 2.2e-16
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 2.073076 2.531939
+sample estimates:
+mean of x mean of y 
+ 44.84496  42.54245 
+"

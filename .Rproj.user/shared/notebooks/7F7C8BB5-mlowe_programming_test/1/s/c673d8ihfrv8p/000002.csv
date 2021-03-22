@@ -1,0 +1,10 @@
+"0","```r
+Vendor37Users <- Transactions_KnownVendor %>%
+  filter(vendor == \"vendor37\") %>%
+  .$account %>%
+  unique()
+
+#use the above list to find filter for transactions made by vendor 37 users
+vendor37UsersPostClose <- MonthsAfter37Closure %>% 
+  filter(account %in% Vendor37Users)
+```"

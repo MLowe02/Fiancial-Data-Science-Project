@@ -1,0 +1,19 @@
+"0","```r
+#subset data for the 3 months after 37 closure
+MonthsAfter37Closure <- Transactions_KnownVendor %>% filter(month > 3)
+
+#We see a significant difference in the average revenue before the closure of vendor 37 and after
+t.test(MonthsBefore37Closure$AdjRev, MonthsAfter37Closure$AdjRev)
+```"
+"1","
+	Welch Two Sample t-test
+
+data:  MonthsBefore37Closure$AdjRev and MonthsAfter37Closure$AdjRev
+t = 37.193, df = 678394, p-value < 2.2e-16
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 2.495228 2.772837
+sample estimates:
+mean of x mean of y 
+ 47.27837  44.64434 
+"

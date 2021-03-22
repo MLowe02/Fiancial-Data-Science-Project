@@ -1,0 +1,32 @@
+"0","```r
+##make a list of the largest countries
+countries <- list(\"country16\",\"country45\",\"country51\", \"country66\", \"country214\", \"country217\")
+
+lapply(countries, function(x){ 
+  Month3rev <- Transactions_KnownVendor %>% 
+    filter(month == 3 & country_code == x) %>%
+    .$AdjRev
+  Month4rev <- Transactions_KnownVendor %>% 
+    filter(month == 4 & country_code == x) %>%
+    .$AdjRev
+  t.test(Month3rev, Month4rev)$p.value #only print the p-value of each test
+})
+```"
+"1","[[1]]
+[1] 9.90104e-07
+
+[[2]]
+[1] 9.466668e-08
+
+[[3]]
+[1] 0.3498712
+
+[[4]]
+[1] 1.443845e-05
+
+[[5]]
+[1] 0.0004932532
+
+[[6]]
+[1] 0.06832546
+"

@@ -1,0 +1,6 @@
+"0","```r
+autoplot(window(DailyRevAndVendors[,1], start = 1, end = 121),xlab = \"Day\", ylab = \"Adjusted Revenue\",main = \"Comparing forecasts if Vendor 37 had remained open\")+
+  autolayer(RevForecast2,PI = F, series = \"Vendor 37 closed\") +
+  autolayer(RevForecast3,PI = F, series = \"Vendor 37 open\",linetype = \"dashed\")+
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
+```"

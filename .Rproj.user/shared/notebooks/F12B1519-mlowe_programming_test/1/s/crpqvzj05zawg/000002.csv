@@ -1,0 +1,12 @@
+"0","```r
+Transactions$vendor %>% table() %>% sort(decreasing = TRUE)#total of 729200 transactions over the months
+```"
+"1",".
+vendor26 vendor11 vendor33 vendor42 vendor37 vendor29 vendor36 vendor25 vendor27 vendor14 vendor20 vendor43 
+  524160   117659    57242    25160     1879     1661     1418       14        4        1        1        1 
+"
+"0","```r
+Transactions$vendor %>% table %>% sum #total number of transactions
+```"
+"1","[1] 729200
+"

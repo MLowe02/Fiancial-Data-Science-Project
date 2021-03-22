@@ -1,0 +1,36 @@
+"0","#import data as tibbles"
+"0","ActiveUsers <- read_csv(here(""m_mock_active_users_20190621.csv""))"
+"2","
+[36m--[39m [1m[1mColumn specification[1m[22m [36m------------------------------------------------------------------------------------------------------------------------------------[39m
+cols(
+  country_code = [31mcol_character()[39m,
+  month = [32mcol_double()[39m,
+  day = [32mcol_double()[39m,
+  relative_active_users = [32mcol_double()[39m
+)
+
+"
+"0","Transactions <- read_csv(here(""m_mock_transaction_20190621.csv""))"
+"2","
+[36m--[39m [1m[1mColumn specification[1m[22m [36m------------------------------------------------------------------------------------------------------------------------------------[39m
+cols(
+  account = [31mcol_character()[39m,
+  sku = [31mcol_character()[39m,
+  vendor = [31mcol_character()[39m,
+  country_code = [31mcol_character()[39m,
+  revenue = [32mcol_double()[39m,
+  month = [32mcol_double()[39m,
+  day = [32mcol_double()[39m
+)
+
+"
+"0","#37 missing values for vendors here"
+"0","VendorMap <- read_csv(here(""m_vendor_map.csv""))"
+"2","
+[36m--[39m [1m[1mColumn specification[1m[22m [36m------------------------------------------------------------------------------------------------------------------------------------[39m
+cols(
+  vendor_id = [31mcol_character()[39m,
+  fee_percentage = [32mcol_double()[39m
+)
+
+"

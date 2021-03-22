@@ -1,0 +1,9 @@
+"0","```r
+MonthsAfter37Closure %>% 
+  filter(account %in% Vendor37Users) %>% 
+  .$vendor%>% table()
+```"
+"1",".
+vendor11 vendor26 vendor33 vendor42 
+      21      156       26        2 
+"

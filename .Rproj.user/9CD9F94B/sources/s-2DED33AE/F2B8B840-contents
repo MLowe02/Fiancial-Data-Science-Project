@@ -1,0 +1,446 @@
+---
+title: "Matthew Lowe Programming Test"
+output:
+  html_notebook: default
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+Lets start with loading all the packages we need for later
+```{r,results='hide'}
+library(here)#QOL package for working with file systems
+library(tidyverse) #contains a number of useful functions for managing data
+library(lubridate) #Package for working with date data. This saves us so much headaches with base R date management
+library(fpp2)# a package that loads a number of useful time series packages
+
+```
+
+And lets import all the data 
+```{r,results='hide'}
+#import data as tibbles
+ActiveUsers <- read_csv(here("m_mock_active_users_20190621.csv"))
+
+Transactions <- read_csv(here("m_mock_transaction_20190621.csv"))
+
+#37 missing values for vendors here
+VendorMap <- read_csv(here("m_vendor_map.csv"))
+```
+
+For those unfamiliar with the tidyverse functions, let me briefly explain the pipe operator %>%. This operator takes the output of any object or function before it and passes it to the next function in the chain. In other words, if we have some vector named X and want the mean of the vector, instead of running the command mean(X), we can 'pipe' X into the function, X %>% mean. This makes the R code much easier for humans to read, particularly when we have a series of nested functions.
+
+Looking at the datasets we have, We run into an initial roadblock of only 6 vendors having a known percentage of the sales that they take. 
+```{r}
+Transactions$vendor %>% table() %>% sort(decreasing = TRUE)#total of 729200 transactions over the months
+Transactions$vendor %>% table %>% sum #total number of transactions
+```
+So as we can see, the transactions are certainly not uniformly distributed across the vendors. With a total of 729200 transactions over 6 months, lets see how many of these transactions are accounted for by vendors whom we know what percentage of the sale they take.
+```{r}
+#filter the data to only contain transactions from known vendors
+Transactions_KnownVendor <- Transactions %>% 
+  filter(vendor == "vendor1" |
+            vendor == "vendor11" |
+            vendor == "vendor26" |
+            vendor == "vendor33" |
+            vendor == "vendor36" |
+            vendor == "vendor37" |
+            vendor == "vendor42"
+  ) 
+
+#Calculate the percent of transactions from known vendors compared to the total transaction number
+Transactions_KnownVendor$vendor %>% table() %>% sum/729200*100
+
+#Calculate the percent of unadjusted revenue from known vendors
+Transactions_KnownVendor$revenue %>% sum/40938991*100
+
+```
+99.77% of transactions and 99.73% of unadjusted revenue comes from vendors that have known percentage cut. So, I am comfortable ommiting the other vendors. Before moving on, lets make an adjusted revenue variable.
+
+```{r}
+
+Transactions_KnownVendor <- Transactions_KnownVendor %>% 
+  group_by(vendor) %>% #case_when essentially acts as a elegant ifelse statement
+  mutate(AdjRev = case_when(vendor == "vendor1" ~ revenue-revenue*0.10,
+                            vendor == "vendor11" ~ revenue-revenue*0.05,
+                            vendor == "vendor26" ~ revenue-revenue*0.20,
+                            vendor == "vendor33" ~ revenue-revenue*0.22,
+                            vendor == "vendor36" ~ revenue-revenue*0.25,
+                            vendor == "vendor37" ~ revenue-revenue*0.30,
+                            vendor == "vendor42" ~ revenue-revenue*0.20,)) %>%
+  ungroup #ungroup is neccesary when we are saving changes made to an object
+```
+Now we can start doing some proper EDA and looking at these questions.
+
+# Before closure - what did revenue look like for vendor37?
+
+## Proportion of total revenue
+
+We got a sense of this earlier, but lets calculate an actual percent.
+```{r}
+#isolate the data before vendor37 closed
+MonthsBefore37Closure <- Transactions_KnownVendor %>% filter(month <= 3)
+
+MonthsBefore37Closure %>% 
+  group_by(vendor) %>%
+  summarise(TotalAdjustedRevenue = sum(AdjRev)) %>% #create a summary table with the total adjusted revenue of each vendor
+  mutate(percent = prop.table(TotalAdjustedRevenue)*100) %>% #add a column to the table for the percent of each vendor
+  arrange(desc(percent)) #arrange the table by percent
+```
+So vendor 37 only made up 0.62% of the total revenue before closure. We can also see that vendor 26 made up almost 71% of all revenue taken before the closure of vendor 37.
+
+## Revenue/transactions per day
+
+As each row is a a single day, we can use simple row operations.
+
+```{r}
+Vend37 <- MonthsBefore37Closure %>% filter(vendor == "vendor37")
+
+#Find the mean per day of revenue
+Vend37$AdjRev %>% mean
+
+#average number of transactions a day, 
+#found by total number of transactions over the total days in the three months
+nrow(Vend37)/(31+29+31)
+```
+Vendor 37 on average had approximately 21 transactions in a day for an average of $65.00 a transaction
+
+## Regional Usage Details
+
+```{r}
+#Bar plot of country usage
+Vend37 %>% group_by(country_code) %>% 
+  ggplot() + 
+  geom_bar(mapping = aes(x=country_code,fill = country_code))+ 
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+```
+So there are only a few countries with transactions coming through vendor 37
+```{r}
+#Only 6 countries have more than 100 transactions through vender 37
+Vend37 %>% group_by(country_code) %>% filter(n() > 100) %>% .$country_code %>% table %>% sort
+
+```
+
+# Upper bound for loss of Revenue following vendor 37 closure
+
+For this, I decided to calculate a simple t-test of the difference in adjusted revenue before and after the closure of vendor 37. This isnt a perfect solution, since the t-test makes the assumption that observations are independent of each other and this is a time series, but it should give a rough estimate for an upper bound.
+```{r}
+Month3Revenue <- 
+  Transactions_KnownVendor %>% 
+  filter(month == 3) %>%
+  select(AdjRev)
+
+Month4Revenue <-
+  Transactions_KnownVendor %>%
+  filter(month == 4) %>%
+  select(AdjRev)
+
+RevenueTest <- t.test(Month3Revenue, Month4Revenue)
+RevenueTest
+```
+In the transition month, we have an upper bound of $2.53 of revenue lost per transaction. A naive estimate of the revenue lost than would be the upper bound times the number of transactions in that month.
+```{r}
+RevenueTest$conf.int[2] * nrow(Month4Revenue)
+```
+So an estimated $280554 is lost following the closure. 
+
+We can also compare the average revenue in the three month period before 37 closure to after
+```{r}
+#subset data for the 3 months after 37 closure
+MonthsAfter37Closure <- Transactions_KnownVendor %>% filter(month > 3)
+
+#We see a significant difference in the average revenue before the closure of vendor 37 and after
+t.test(MonthsBefore37Closure$AdjRev, MonthsAfter37Closure$AdjRev)
+```
+There is a similar upper bound of $2.77 lost per transaction in the months after closure
+
+# Number of users affected by the closure 
+
+This is a straightforward question, just take the count of unique users of vendor 37 before closure
+```{r}
+MonthsBefore37Closure %>% 
+  filter(vendor == "vendor37") %>% 
+  select(account) %>% unique %>% nrow
+```
+1215 users made purchases through vendor37 in the months before the closure
+
+# Is there a measurable revenue change as a result of the closure
+
+This question cannot be answered in the exploratory data analysis stage. While we can see, from the earlier t-test, that there is a statistically significant difference (t = 19.67, df = 240432, p < 0.0001) between revenue before and after vendor 37 closed, this *does not* imply that the vendor37 closure 
+caused the decrease in revenue, or was even associated with it. This is something that needs to be addressed with modelling.
+
+## What about regionally?
+
+Well, we established before that there were only really 6 countries that had 100 transactions over the three months prior these are country16, country214, country217,  country45,  country51, and country66.
+
+```{r}
+##make a list of the largest countries
+countries <- list("country16","country45","country51", "country66", "country214", "country217")
+
+lapply(countries, function(x){ 
+  Month3rev <- Transactions_KnownVendor %>% 
+    filter(month == 3 & country_code == x) %>%
+    .$AdjRev
+  Month4rev <- Transactions_KnownVendor %>% 
+    filter(month == 4 & country_code == x) %>%
+    .$AdjRev
+  t.test(Month3rev, Month4rev)$p.value #only print the p-value of each test
+})
+
+```
+There is a significant difference in adjusted revenue after vendor 37 closure in countries 16, 45, 66, and 214
+
+# How does the spending (ARPU) of vendor37 users after closure compare to the spending of the users of other vendors?
+
+Lets get a list of all users of vendor 37
+```{r}
+Vendor37Users <- Transactions_KnownVendor %>%
+  filter(vendor == "vendor37") %>%
+  .$account %>%
+  unique()
+
+#use the above list to find filter for transactions made by vendor 37 users
+vendor37UsersPostClose <- MonthsAfter37Closure %>% 
+  filter(account %in% Vendor37Users)
+```
+
+Lets calculate the average revenue per user of vendor37 users
+```{r}
+#this calculates the sum of adjusted revenue
+vendor37UsersPostClose %>%
+  .$AdjRev %>%
+  sum(.)/
+#calculates the number of users
+vendor37UsersPostClose %>%
+  .$account %>% 
+  unique %>% 
+  length
+
+```
+So former vendor 37 users have an arpu of $110.88. How does this compare to other users?
+
+```{r}
+#This calculates the ARPU of users who are not on the list of vendor 37 users
+MonthsAfter37Closure %>% 
+  filter(!(account %in% Vendor37Users)) %>% 
+  .$AdjRev %>% 
+  sum()/
+MonthsAfter37Closure %>%
+  filter(!(account %in% Vendor37Users)) %>%
+  .$account %>% 
+  unique %>% 
+  length
+```
+So we can see that the ARPU of the former vendor 37 users is on average higher than users of all other vendors during the 3 month period following the closure of Vendor 37. How many users are still making purchases?
+```{r}
+vendor37UsersPostClose %>%
+  .$account %>% 
+  unique %>% 
+  length
+```
+Only 98 of the original 1215 users are still making purchases. So 92% of the former users of vendor 37 have not made another purchase since the vendor closed. Lets look at where they are making these purchases.
+```{r}
+MonthsAfter37Closure %>% 
+  filter(account %in% Vendor37Users) %>% 
+  .$vendor%>% table()
+```
+So most of the transactions are being processed through vendor 26, the vendor that processes over 70% of all transactions. 
+
+Personally, I doubt that the closure of vendor 37 caused a significant decrease in profits, unless this closure was associated with a bad PR event that soured community opinion. This is due to the very small ammount of adjusted revenue that vendor37 accounted for before the closure. Remember, vendor 37 only made up 0.68% of the total revenue in the months before its closure. 
+
+# Looking at sku
+
+Lets look at some of the other information we have, like the sku. There are only 100 sku sold throughout the entire 6 month period. Maybe some popular item stopped being sold at a time that coincides with vendor37 closure?
+```{r}
+#73 sku bought
+MonthsBefore37Closure %>% select(sku) %>% unique %>% nrow()
+#85 sku bought
+MonthsAfter37Closure %>% select(sku) %>% unique %>% nrow()
+
+```
+```{r}
+#list of sku sold in the months before closure
+SkuList <- MonthsBefore37Closure %>% .$sku %>% unique
+MonthsAfter37Closure %>% filter(sku %in% SkuList) %>% select(sku) %>% unique %>% nrow()
+
+```
+So, that means that 15 sku stopped being sold (or bought) after 37 closure, and 27 new sku were sold.
+what if the new sku didnt do as well as the 15 that stopped being sold? Lets look at proportion of revenue by sku.
+
+```{r}
+MonthsBefore37Closure %>% 
+  group_by(sku) %>%
+  summarise(TotalRevenue = sum(AdjRev)) %>% 
+  mutate(percent = prop.table(TotalRevenue)*100) %>% 
+  arrange(desc(percent)) %>%  
+  head(10) #look at the top 10 
+
+```
+
+So we can see a couple of heavy hitters here, with the first three sku accounting for 67.3% of the revenue.
+Lets check the revenue split of the sku after vendor 37 closed
+```{r}
+MonthsAfter37Closure %>% 
+  group_by(sku) %>%
+  summarise(TotalRevenue = sum(AdjRev)) %>% 
+  mutate(percent = prop.table(TotalRevenue)*100) %>% 
+  arrange(desc(percent)) %>% 
+  head(10)
+```
+Well, that sinks that hypothesis. The top six most profitable sku are unchanged before and after the closure.
+
+What about the total number of users? What there are just less users overall after vendor 37 closed?
+```{r}
+MonthsBefore37Closure %>% .$account %>% unique() %>% length -
+MonthsAfter37Closure %>% .$account %>% unique %>% length
+```
+Ah hah! 46189 less users were making purchases after the closure of vendor 37. So I am comfortale hypothesizing, before doing any modeling, that the closure of vendor 37 did not make a substantial difference in sales.
+
+Before moving into the actual analysis, it is convientent to define a single, continuous time variable. We'll use functions from the package lubridate to do this.
+```{r}
+#we use the function ymd, which takes a string as an input and converts it to a date format
+Transactions_KnownVendor$date <-  ymd(
+  paste(2020,Transactions_KnownVendor$month , Transactions_KnownVendor$day , sep = "-" ))#paste takes any vector as an input and converts it to a string.
+
+```
+
+We use 2020 as the arbitrary date for the year, since 2020 is a leap year and february 29th will be undefined otherwise.
+
+One last bit of EDA with this; lets look at the trend of revenue over the 6 month period
+```{r}
+#Lets collapse the individual transactions into the days, so we have a revenue time plot
+DailyAdjRev <- Transactions_KnownVendor %>% 
+  group_by(date) %>% 
+  summarize(DailyRevenue = sum(AdjRev))
+
+DailyAdjRev$DailyRevenue %>% 
+  ts %>% #ts is a function that converts data to a time series object, which is useful for a number of reasons 
+  autoplot(xlab = "day", ylab = "Daily Adjusted Revenue") + 
+  geom_vline(xintercept = 92, linetype = "dashed", color = "red") + #day vendor 37 closed
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))#We need to tell ggplot2 not to use scientific notation
+
+#autoplot takes an object of class ts and plots an appropriate graph for it
+```
+
+So we can see what appears as a general downward trend. The red dashed line is the day vendor 37 closed. It appears to coincide with a marked decrease in revenue. 
+Note that since we only have data for 6 months, this looks like a general downward trend but with more
+data, say data going back a year or two, we may find that this is a seasonal pattern for the first and second quarters.
+We can also see what may be an inflection point around day 150, where the trend starts to increase again
+as we move into the summer months.
+
+# Modelling
+This is clearly a time-series problem. I haven't worked with time-series before, so this has been an interesting learning experience. 
+
+Our goal is to predict the adjusted revenue, based on if vendor37 had remained open or not. One approach is to isolate the revenue that comes from vendor 37 as an ARIMA(p,d,q) function. However, this only lets use predict revenue based on previous, lagged values of revenue. I would prefer to model revenue as a function of vendor, in some way.
+A way to approach that is to recall that the revenue that is generated in a day is related to the the number of transactions that happen in a day. Thus, We can split the daily transactions by vendors, and model daily revenue as a function of the transactions fromm each vendor. 
+
+```{r}
+#Lets create variables that are the count of the vendor transactions for a given day
+DailyRevAndVendors <-
+  Transactions_KnownVendor %>% 
+  group_by(date) %>% 
+  summarize(DailyRevenue = sum(AdjRev), 
+            vendor11 = length(which(vendor=="vendor11")),
+            vendor26 = length(which(vendor=="vendor26")),
+            vendor33 = length(which(vendor=="vendor33")),
+            vendor36 = length(which(vendor=="vendor36")),
+            vendor37 = length(which(vendor=="vendor37")),
+            vendor42 = length(which(vendor=="vendor42")), ) %>% 
+  .[,-1] %>%  ts #these last two calls removes the date from the table and converts the table to a ts object
+```
+
+Lets look at a time plot for the daily transactions in each vendor
+```{r}
+autoplot(DailyRevAndVendors[,-1], main = "Daily Volume by Vendor", ylab = "# Transactions", xlab = "Day")
+```
+We can see a pattern similar to the trend of daily revenue in the number of transactions from vendor 26.
+
+Before doing any modelling, we'll split the data into train/test sets. In this case, I am going to use an 80/20 split, where 80% of the data is in the training set, 20% is in the test set. Since we have 91 days before the closure of vendor 37, the training set will be the subset of days before 72, while the test set will be the days between 72 and 91. Im splitting the data before the closure of vendor 37 so we can test the model on data that contains non-zero values for vendor 37 counts.
+```{r}
+trainset <- DailyRevAndVendors %>% window(start = 1, end = 72) #grab the first 80% of the series
+testset <-  DailyRevAndVendors %>% window(start = 73, end = 91) #grab the last 20% for training
+testset #so we have an idea what this kind of data looks like
+```
+
+
+We'll start with a time series multiple linear regression as a start. This is unlikely to be appropriate, but it gives a good starting point. Let
+
+$$
+y_t = \beta_0 + \beta_1Vendor11_{t} + \ldots + \beta_6Vendor42_t + \epsilon_t \text{ , for } t = 1\ldots151
+$$
+Where $t$ is the day, $y_t$ is the revenue for the $t^{th}$ day, and $\epsilon_t$ is assumed to be uncorrelated white noise. In R,
+
+```{r}
+linmod <- tslm(DailyRevenue ~vendor11+
+     vendor26+
+     vendor33+
+     vendor36+
+     vendor37+
+     vendor42 , data = trainset)
+summary(linmod)
+
+```
+Lets check the residuals
+```{r}
+checkresiduals(linmod)
+```
+So it looks like there is a problem with autocorrelation in the residuals. Fortunately, we allow autocorrelation in $\epsilon_t$ by modelling $\epsilon_t$ as an an ARIMA(p,d,q) model. 
+In R, this can easily be done using the auto.arima function. This function applies a Hyndman-Khandakar algorithm to determine the best possible value for the ARIMA parameters.
+```{r}
+fit <- auto.arima(trainset[,1], #set daily revenue as y
+                  xreg = trainset[,-1], #give the vendor counts as predictors
+                  stepwise = FALSE, approximation = FALSE)#these last too calls result in a more accurate model at computational cost
+
+fit
+
+```
+So we have a regression where the errors are modeled as an ARIMA(0,1,3).
+```{r}
+checkresiduals(fit)
+```
+There is an positive outlier residual, and the boxplot looks somewhat skewed. There is also some significant autocorrelation in the residuals, so the prediction intervals may provide less accurate coverage.
+Now, lets forecast the next 18 days and see how well the forecast matches the actual data
+```{r}
+RevForecast1 <- forecast(fit, xreg = testset[,-1]) #forecast the revenue for new predictor values
+autoplot(window(DailyRevAndVendors[,1], start = 1, end = 91),#plot the first 91 days
+         xlab = "Day", ylab = "Adjusted Revenue",main = "Forecasted revenue vs Actual revenue")+
+  autolayer(RevForecast1) + #plot the forecast on the graph
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
+```
+Our model actually predicts the revenue fairly well! Now lets apply this model to data past the date where vendor 37 closed and see how that looks. We'll start by using the data where vendor 37 closed, and compare that to a forecast where we replace the 0 counts in the vendor 37 variable. 
+```{r}
+predictionset <- DailyRevAndVendors %>% window(start = 73, end = 121) #lets grab points 30 days after vendor closure
+
+RevForecast2 <- forecast(fit, xreg = predictionset[,-1])
+autoplot(RevForecast2) #we can see our prediction interval gets larger as time increases
+```
+Lets compare these to the actual observed values. We wont display the prediction interval, since they would cover the observed values. 
+```{r}
+autoplot(window(DailyRevAndVendors[,1], start = 1, end = 121),xlab = "Day", ylab = "Adjusted Revenue",main = "Forecasted revenue vs Actual revenue")+
+  autolayer(RevForecast2,PI = F, series = "Forecast") +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
+
+```
+We can see that the forecast trend follows the trend of the observed data quite well, though it underestimates the actual revenue. 
+
+Now, lets try and forecast the daily adjusted revenue if vendor 37 hadnt closed. There are a couple potential ways to do this. For simplicity, we'll just take the mean daily count of transactions from vendor37 before closure. Earlier, in our EDA, we found this value to be 21. 
+```{r}
+predictionset2 <- predictionset
+predictionset2[,"vendor37"][predictionset2[,"vendor37"]==0] <- 21 #change the 0 values from after vendor 37 closure to the mean value of 21
+
+#forecast the data where vendor37 didn't close
+RevForecast3 <- forecast(fit, xreg = predictionset2[,-1])
+autoplot(RevForecast3)
+```
+Now, lets superimpose all the predictions on one plot
+```{r}
+autoplot(window(DailyRevAndVendors[,1], start = 1, end = 121),xlab = "Day", ylab = "Adjusted Revenue",main = "Comparing forecasts if Vendor 37 had remained open")+
+  autolayer(RevForecast2,PI = F, series = "Vendor 37 closed") +
+  autolayer(RevForecast3,PI = F, series = "Vendor 37 open",linetype = "dashed")+
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
+  
+
+```
+We can see that the forecasts are almost overlayed, so the revenue difference is minimal. From this, I would conclude that the closure of vendor 37 had no effect on the total revenue of the company. The closure of vendor 37 coincided with a general downward trend of active users and sales. 

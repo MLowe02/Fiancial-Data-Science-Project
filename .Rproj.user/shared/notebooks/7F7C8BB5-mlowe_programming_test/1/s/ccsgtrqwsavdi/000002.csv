@@ -1,0 +1,14 @@
+"0","```r
+#This calculates the ARPU of users who are not on the list of vendor 37 users
+MonthsAfter37Closure %>% 
+  filter(!(account %in% Vendor37Users)) %>% 
+  .$AdjRev %>% 
+  sum()/
+MonthsAfter37Closure %>%
+  filter(!(account %in% Vendor37Users)) %>%
+  .$account %>% 
+  unique %>% 
+  length
+```"
+"1","[1] 80.38098
+"

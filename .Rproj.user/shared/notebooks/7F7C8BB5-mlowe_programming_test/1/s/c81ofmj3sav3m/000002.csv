@@ -1,0 +1,23 @@
+"0","```r
+#filter the data to only contain transactions from known vendors
+Transactions_KnownVendor <- Transactions %>% 
+  filter(vendor == \"vendor1\" |
+            vendor == \"vendor11\" |
+            vendor == \"vendor26\" |
+            vendor == \"vendor33\" |
+            vendor == \"vendor36\" |
+            vendor == \"vendor37\" |
+            vendor == \"vendor42\"
+  ) 
+
+#Calculate the percent of transactions from known vendors compared to the total transaction number
+Transactions_KnownVendor$vendor %>% table() %>% sum/729200*100
+```"
+"1","[1] 99.76934
+"
+"0","```r
+#Calculate the percent of unadjusted revenue from known vendors
+Transactions_KnownVendor$revenue %>% sum/40938991*100
+```"
+"1","[1] 99.72917
+"

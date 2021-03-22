@@ -1,0 +1,7 @@
+"0","```r
+library(here)#QOL package for working with file systems
+library(tidyverse) #contains a number of useful functions for managing data
+library(lubridate) #Package for working with date data. This saves us so much headaches with base R date management
+library(fpp2)# a package that loads a number of useful time series packages
+
+```"

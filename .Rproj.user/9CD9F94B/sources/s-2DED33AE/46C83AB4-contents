@@ -1,0 +1,6 @@
+e <- tsCV(DailyAdj37Rev$DailyRevenue, forecastfunction=naive, h=30)
+# Compute the MSE values and remove missing values
+mse <- colMeans(e^2, na.rm = T)
+# Plot the MSE values against the forecast horizon
+data.frame(h = 1:30, MSE = mse) %>%
+  ggplot(aes(x = h, y = MSE)) + geom_point()

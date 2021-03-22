@@ -1,0 +1,34 @@
+"0","```r
+linmod <- tslm(DailyRevenue ~vendor11+
+     vendor26+
+     vendor33+
+     vendor36+
+     vendor37+
+     vendor42 , data = trainset)
+summary(linmod)
+```"
+"1","
+Call:
+tslm(formula = DailyRevenue ~ vendor11 + vendor26 + vendor33 + 
+    vendor36 + vendor37 + vendor42, data = trainset)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-32821  -4260   1722   6757  15006 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -5216.803  10676.435  -0.489 0.626750    
+vendor11      115.974     13.470   8.610 2.42e-12 ***
+vendor26       45.116      3.931  11.478  < 2e-16 ***
+vendor33      -39.874     38.912  -1.025 0.309291    
+vendor36     -110.918    306.437  -0.362 0.718556    
+vendor37       60.810     90.666   0.671 0.504785    
+vendor42       25.891      7.269   3.562 0.000695 ***
+---
+Signif. codes:  0 â€˜***â€™ 0.001 â€˜**â€™ 0.01 â€˜*â€™ 0.05 â€˜.â€™ 0.1 â€˜ â€™ 1
+
+Residual standard error: 9730 on 65 degrees of freedom
+Multiple R-squared:  0.9435,	Adjusted R-squared:  0.9382 
+F-statistic: 180.8 on 6 and 65 DF,  p-value: < 2.2e-16
+"

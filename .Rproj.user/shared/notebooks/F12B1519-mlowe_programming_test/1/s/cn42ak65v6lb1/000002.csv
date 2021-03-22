@@ -1,0 +1,11 @@
+"0","```r
+#import data as tibbles
+ActiveUsers <- read_csv(here(\"m_mock_active_users_20190621.csv\"))
+```"
+"0","```r
+Transactions <- read_csv(here(\"m_mock_transaction_20190621.csv\"))
+```"
+"0","```r
+#37 missing values for vendors here
+VendorMap <- read_csv(here(\"m_vendor_map.csv\"))
+```"

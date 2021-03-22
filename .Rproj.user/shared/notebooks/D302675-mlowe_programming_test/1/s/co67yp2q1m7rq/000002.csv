@@ -1,0 +1,6 @@
+"0","MonthsAfter37Closure %>% "
+"0","  group_by(sku) %>%"
+"0","  summarise(TotalRevenue = sum(AdjRev)) %>% "
+"0","  mutate(percent = prop.table(TotalRevenue)*100) %>% "
+"0","  arrange(desc(percent)) %>% "
+"0","  head(10)"

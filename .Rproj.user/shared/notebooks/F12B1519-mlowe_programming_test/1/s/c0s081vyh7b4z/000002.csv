@@ -1,0 +1,15 @@
+"0","```r
+Vend37 <- MonthsBefore37Closure %>% filter(vendor == \"vendor37\")
+
+#Find the mean per day of revenue
+Vend37$AdjRev %>% mean
+```"
+"1","[1] 65.00705
+"
+"0","```r
+#average number of transactions a day, 
+#found by total number of transactions over the total days in the three months
+nrow(Vend37)/(31+29+31)
+```"
+"1","[1] 20.64835
+"

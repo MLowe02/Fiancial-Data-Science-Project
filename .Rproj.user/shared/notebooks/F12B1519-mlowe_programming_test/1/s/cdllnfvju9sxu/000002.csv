@@ -1,0 +1,13 @@
+"0","```r
+#this calculates the sum of adjusted revenue
+vendor37UsersPostClose %>%
+  .$AdjRev %>%
+  sum(.)/
+#calculates the number of users
+vendor37UsersPostClose %>%
+  .$account %>% 
+  unique %>% 
+  length
+```"
+"1","[1] 110.8797
+"

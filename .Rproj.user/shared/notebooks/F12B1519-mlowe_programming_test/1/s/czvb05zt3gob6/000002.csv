@@ -1,0 +1,10 @@
+"0","```r
+#isolate the data before vendor37 closed
+MonthsBefore37Closure <- Transactions_KnownVendor %>% filter(month <= 3)
+
+MonthsBefore37Closure %>% 
+  group_by(vendor) %>%
+  summarise(TotalAdjustedRevenue = sum(AdjRev)) %>% #create a summary table with the total adjusted revenue of each vendor
+  mutate(percent = prop.table(TotalAdjustedRevenue)*100) %>% #add a column to the table for the percent of each vendor
+  arrange(desc(percent)) #arrange the table by percent
+```"
