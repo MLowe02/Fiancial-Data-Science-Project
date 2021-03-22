@@ -1,5 +1,6 @@
 # Fiancial-Data-Science-Project
-This is a project I did as a test for a company. The basic scenario is that we are given mock transaction and purchase history of individual customers for a six month period.
+This is a project I did as a test for a company. A detailed report is presented in Time Series Problem.html
+The basic scenario is that we are given mock transaction and purchase history of individual customers for a six month period.
 Each transaction is processed through a specific vendor, with each vendor taking a different cut of the revenue from the purchase. 
 
 At the end of March, vendor 37 closes. This is one of the vendors that takes a high percentage of the revenue cut. 
